@@ -1,0 +1,26 @@
+configurations {
+    itestCompile.extendsFrom testCompile
+    itestRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+    itest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/itest/java')
+        }
+        resources.srcDir file('src/itest/resources')
+    }
+}
+
+task itest(type: Test) {
+    testClassesDirs += sourceSets.itest.output.classesDirs
+    classpath = sourceSets.itest.runtimeClasspath
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+check.dependsOn itest
+itest.mustRunAfter test

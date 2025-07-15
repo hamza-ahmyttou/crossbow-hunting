@@ -1,0 +1,67 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.7'
+    id 'java'
+    id 'jacoco'
+}
+
+apply from: 'itest.gradle'
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+mainClassName = 'hunting.crossbow.ClientMain'
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+javafx {
+    version = "11.0.1"
+    modules = ['javafx.controls', 'javafx.fxml']
+}
+
+dependencies {
+    compile(
+            ['org.xerial:sqlite-jdbc:3.14.2'], // if sqlite is used.
+            [files("lib")]
+    )
+    testCompile(
+            [group: 'junit', name: 'junit', version: '4.+'],
+            ['org.xerial:sqlite-jdbc:3.14.2'],
+            ['pl.pragmatists:JUnitParams:1.1.1'],
+            ['org.mockito:mockito-core:2.+'],
+            [files("lib")]
+    )
+}
+
+task copyLibFolder(type: Copy) {
+    description 'Copies the lib folder.'
+    from('lib')
+    into("$buildDir/classes")
+}
+
+compileJava.dependsOn copyLibFolder
+
+applicationDistribution.from(['LICENSE.txt', 'README.md']) {
+    into ''
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'fr.ensicaen.ecole.genielogiciel.archerie'
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.4"
+    reportsDir = file("$buildDir/customJacocoReportDir")
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = false
+        csv.enabled = false
+        html.destination file("${buildDir}/jacocoHtml")
+    }
+}
